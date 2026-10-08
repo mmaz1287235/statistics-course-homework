@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Homework 1 — ECC and Blockchain</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="eyebrow">Statistics · Homework 1</p>
+      <h1>Elliptic Curve Cryptography and Blockchain</h1>
+      <p class="intro">A small experiment with secp256k1, followed by a statistical look at its output and a comparison of cryptography across different blockchains.</p>
+      <p class="note">Teaching example — not a secure hash function.</p>
+    </header>
+
+    <nav aria-label="On this page"><a href="#background">Background</a><a href="#demo">Try the demo</a><a href="#tests">Statistical tests</a><a href="#research">Blockchain research</a><a href="#references">References</a></nav>
+
+    <section id="background">
+      <h2>1. Background</h2>
+      <p>A cryptographic hash takes an input and returns a fixed-size result. In a well-designed hash, small changes to the input should produce very different outputs. Elliptic curve cryptography (ECC) is something else: it works with points on a curve and is commonly used for public-key cryptography and digital signatures.</p>
+      <p>Here we use the elliptic curve <strong>secp256k1</strong>, defined over a finite field by <code>y² = x³ + 7 (mod p)</code>. It has a standard base point <code>G</code> and a group order <code>n</code>. For a scalar <code>k</code>, we compute the point <code>P = kG</code>.</p>
+      <p>To make a toy “hash”, I first convert the UTF-8 bytes of the input into a scalar using a simple rolling calculation modulo <code>n</code>. I then multiply <code>G</code> by that scalar and return the 256-bit x-coordinate of the resulting point. This gives a fixed-size output, but it <strong>is not a secure hash construction</strong>. The rolling calculation has a predictable structure and can be attacked; using a real elliptic curve does not automatically make the result secure.</p>
+    </section>
+
+    <section id="demo">
+      <h2>2. Practical experiment</h2>
+      <label for="message">Input text</label>
+      <textarea id="message" rows="3" spellcheck="false">Hello blockchain</textarea>
+      <button id="calculate">Calculate toy output</button>
+      <p class="small">X-coordinate of <code>kG</code>, displayed as 64 hexadecimal characters:</p>
+      <output id="hash-output" class="hash" aria-live="polite"></output>
+      <h3>Change the message</h3>
+      <p>Try changing just one letter and compare the two outputs. This is a quick way to explore the avalanche effect.</p>
+      <label for="changed-message">Second message</label>
+      <textarea id="changed-message" rows="2" spellcheck="false">Hello blockchaiN</textarea>
+      <button id="compare">Compare the two messages</button>
+      <output id="comparison" class="hash comparison" aria-live="polite"></output>
+      <p class="small">The JavaScript implementation uses <code>BigInt</code> and point arithmetic directly, without an ECC package. It is intended for learning, not for private keys, digital signatures or real applications.</p>
+    </section>
+
+    <section id="tests">
+      <h2>3. Statistical observations</h2>
+      <p>I use a reproducible set of sample messages (<code>sample-0000</code>, <code>sample-0001</code>, and so on). For each message, the code flips one bit in the last UTF-8 byte and measures the Hamming distance between the two 256-bit outputs. It also measures overall bit balance, pooled binary entropy and repeated outputs.</p>
+      <label for="sample-count">Number of sample pairs</label>
+      <select id="sample-count"><option value="24">24 (quick)</option><option value="64" selected>64</option><option value="128">128 (slower)</option></select>
+      <button id="run">Run statistical tests</button>
+      <div id="report" class="report" aria-live="polite">Click the button to run the experiment.</div>
+      <div id="distribution" aria-label="Output bit proportions"></div>
+      <div id="histogram"></div>
+      <h3>How to read these results</h3>
+      <p><strong>Bit balance:</strong> For random-looking 256-bit outputs, approximately half of the bits should be 1. With a small sample, we should not expect exactly 50%.</p>
+      <p><strong>Avalanche effect:</strong> A strong hash is expected to change roughly half the output bits when just one input bit changes. We report the observed Hamming distance, not a proof that the avalanche property holds.</p>
+      <p><strong>Entropy:</strong> The reported number is the binary Shannon entropy calculated from the pooled proportion of zeros and ones. It describes bit balance only; it does <em>not</em> measure the cryptographic entropy or unpredictability of the output.</p>
+      <p><strong>Collisions:</strong> Not finding repeated outputs in this small set is weak evidence. The rolling conversion of text into a scalar is not collision-resistant, and reducing modulo the curve order can create collisions. Different points can also share an x-coordinate (<code>P</code> and <code>−P</code>).</p>
+      <h3>Method and limitations</h3>
+      <p>The experiment is deterministic, so anyone running the same sample size obtains the same figures. The 50% bit balance and 128/256 changed bits are useful reference values, not formal acceptance thresholds. The sample messages are similar rather than randomly selected, and this is not a complete randomness test suite. I also do not test resistance to preimages, second preimages or carefully constructed collisions. A few good-looking statistics cannot establish these properties.</p>
+      <p>The biggest weakness is the first step: converting bytes into a scalar by repeatedly multiplying by 257. For short inputs this encoding is predictable and, without modular wraparound, easy to reconstruct from the scalar. Multiplication by the real secp256k1 base point does not turn that simple encoding into a standard secure hash function. It is only an illustration of how message data can be mapped into a curve computation.</p>
+    </section>
+
+    <section id="research">
+      <h2>4. Research: cryptography and statistics in blockchains</h2>
+      <p>The three examples below show that blockchains use cryptography for different purposes: linking data, proving authorization and reaching agreement on the ledger. Their statistical questions are different too.</p>
+      <h3>Bitcoin</h3>
+      <p>Bitcoin uses SHA-256 in block headers and proof of work. Miners repeatedly change parts of a candidate block until the hash falls below a target. Each trial can be modeled approximately as a Bernoulli trial with a very small success probability, so the number of attempts needed is random. A lower target means finding a valid block is harder.</p>
+      <p>For a simple probability model, let <code>p</code> be the probability that one independent hash attempt meets the target. The number <code>N</code> of trials until the first success follows a geometric distribution: <code>Pr(N = k) = (1 − p)^(k − 1) p</code>, for <code>k = 1, 2, ...</code>. Its expected value is <code>E[N] = 1/p</code>. For example, if <code>p = 1/1,000,000</code>, we expect one million attempts on average, but that is not a guarantee of success after one million tries. This helps explain why mining times vary.</p>
+      <p>For spending coins, signatures prove authorization. Bitcoin has used ECDSA over secp256k1 for years; Taproot also supports BIP340 Schnorr signatures over the same curve. The hash function and the signature algorithm do different jobs: hashing commits to data, while signatures prove that a valid key authorized a transaction.</p>
+      <h3>Ethereum</h3>
+      <p>Ethereum uses Keccak-256 for addresses and data structures such as transaction-related hashes. Normal externally owned accounts use ECDSA with secp256k1 to sign transactions. Ethereum does not use Bitcoin-style mining anymore: under proof of stake, validators are selected to propose blocks and participate in committees. Random selection and stake weighting introduce probability into the consensus process, while penalties help discourage dishonest behavior.</p>
+      <p>This is a useful difference from Bitcoin. Both networks use related public-key cryptography for user accounts, but their methods for agreeing on new blocks are quite different.</p>
+      <p>There is a probability question here as well. In a simplified model, if a validator controls a fraction <code>w</code> of the total effective stake, its chance of being chosen as a block proposer in a given slot is approximately <code>w</code>. Over <code>T</code> comparable slots, the expected number of proposals is approximately <code>T × w</code>. Real Ethereum selection follows a protocol-defined pseudorandom process, so this model is an illustration rather than a full simulation of the protocol.</p>
+      <h3>Solana</h3>
+      <p>Solana transactions normally use Ed25519 signatures, based on a different curve from secp256k1. Solana also uses Proof of History: a sequence of repeated cryptographic hash computations helps provide a verifiable ordering of events. Proof of History is not, by itself, the entire consensus mechanism; the network also relies on stake-based validator participation.</p>
+      <p>The statistical link here is less about mining trials and more about validator behavior, network performance and the assumptions behind cryptographic hash outputs.</p>
+      <p>Proof of History repeatedly applies SHA-256 so that later values depend on earlier ones. This is different from my secp256k1 toy output, which maps each input to a curve point. Both involve deterministic calculations, but they do not provide the same security guarantees. Looking at bit frequencies or Hamming distances may be interesting in either case, while neither test proves that the system is secure or that its consensus rules work correctly.</p>
+      <h3>Comparison</h3>
+      <div class="scroll"><table><thead><tr><th>Blockchain</th><th>Typical signatures</th><th>Hashing example</th><th>Statistical connection</th></tr></thead><tbody><tr><td>Bitcoin</td><td>ECDSA / Schnorr (secp256k1)</td><td>SHA-256</td><td>Mining probability</td></tr><tr><td>Ethereum</td><td>ECDSA (secp256k1) for externally owned accounts</td><td>Keccak-256</td><td>Validator sampling</td></tr><tr><td>Solana</td><td>Ed25519</td><td>Sequential SHA-256 in Proof of History</td><td>Stake-based validator system</td></tr></tbody></table></div>
+      <h3>What statistics adds</h3>
+      <p>The most direct statistical example is Bitcoin mining: a very small success probability repeated many times explains why block discovery is irregular. In proof-of-stake networks, random committee or proposer selection creates different probability questions. Statistics can also help monitor transaction activity and unusual patterns, though that kind of analysis is separate from the cryptographic proof that a signature is valid.</p>
+      <p>Overall, cryptography provides mathematical mechanisms for integrity and authorization. Statistical analysis helps us describe randomness and observe behavior, but a few experimental tests cannot prove that a cryptographic system is secure.</p>
+    </section>
+
+    <section id="references">
+      <h2>5. References</h2>
+      <ul>
+        <li><a href="https://www.secg.org/sec2-v2.pdf">SECG, SEC 2: Recommended Elliptic Curve Domain Parameters (secp256k1)</a></li>
+        <li><a href="https://developer.bitcoin.org/devguide/">Bitcoin Developer Guide</a></li>
+        <li><a href="https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki">Bitcoin BIP340: Schnorr Signatures for secp256k1</a></li>
+        <li><a href="https://ethereum.org/en/developers/docs/consensus-mechanisms/pos/">Ethereum documentation: Proof of Stake</a></li>
+        <li><a href="https://ethereum.org/en/developers/docs/accounts/">Ethereum documentation: Accounts</a></li>
+        <li><a href="https://solana.com/docs">Solana documentation</a></li>
+        <li><a href="https://solana.com/news/proof-of-history">Solana: Proof of History overview</a></li>
+      </ul>
+    </section>
+    <footer>Statistics course · Academic year 2026/2027 · Homework 1</footer>
+  </main>
+</body>
+</html>
