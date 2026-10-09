@@ -4,64 +4,136 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Statistics - Homework</title>
+  <title>Statistics | MSc Cybersecurity</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 850px;
-      margin: 50px auto;
-      padding: 20px;
-      line-height: 1.7;
-      color: #292929;
-      background-color: #fafafa;
+    * {
+      box-sizing: border-box;
     }
 
-    h1, h2 {
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 900px;
+      margin: 60px auto;
+      padding: 0 24px;
+      line-height: 1.7;
       color: #253653;
+      background: #f7f9fc;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      margin-bottom: 8px;
+    }
+
+    h2 {
+      margin-top: 45px;
+      font-size: 1.5rem;
+    }
+
+    .intro {
+      color: #52627a;
     }
 
     .homework {
-      background: white;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 20px;
-      margin-top: 20px;
+      background: #ffffff;
+      border: 1px solid #dce3ed;
+      border-radius: 12px;
+      padding: 28px;
+      margin-top: 24px;
+    }
+
+    .homework h3 {
+      margin-top: 0;
+      color: #162b49;
+    }
+
+    .tag {
+      display: inline-block;
+      font-size: 0.8rem;
+      font-weight: bold;
+      color: #2457b3;
+      background: #eaf1ff;
+      padding: 5px 10px;
+      border-radius: 6px;
+    }
+
+    .button {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 11px 18px;
+      background: #2859b8;
+      color: #ffffff;
+      text-decoration: none;
+      border-radius: 7px;
+      font-weight: bold;
+    }
+
+    .button:hover {
+      background: #17438f;
     }
 
     footer {
-      margin-top: 50px;
-      font-size: 14px;
-      color: #777;
+      margin-top: 65px;
+      padding-bottom: 25px;
+      font-size: 0.9rem;
+      color: #68778d;
     }
   </style>
 </head>
 <body>
 
-  <h1>Statistics - Homework</h1>
-
-  <p>
-    This website collects my homework assignments
-    and projects for the Statistics course of the
-    MSc in Cybersecurity at Sapienza University of Rome.
-  </p>
-
-  <h2>Homework Assignments</h2>
-
-  <div class="homework">
-    <h3>Homework 1 - ECC and Blockchain</h3>
-
-    <p>
-      A practical introduction to hashing with
-      elliptic curve cryptography (secp256k1),
-      including statistical analysis and research
-      on blockchain applications.
+  <header>
+    <h1>Statistics - Homework</h1>
+    <p class="intro">
+      MSc in Cybersecurity | Sapienza University of Rome
+      <br>
+      Academic Year 2026/2027
     </p>
+    <p>
+      This website collects my practical assignments for the
+      Statistics course, with interactive experiments,
+      statistical observations and explanations of the
+      underlying concepts.
+    </p>
+  </header>
 
-    <p><em>Work in progress.</em></p>
-  </div>
+  <main>
+    <h2>Homework Assignments</h2>
+
+    <section class="homework">
+      <span class="tag">Homework 1</span>
+
+      <h3>From a Private Key to a Public Key</h3>
+
+      <p>
+        An interactive introduction to elliptic-curve scalar
+        multiplication, using the small toy curve
+        y² = x³ + 7 (mod 17).
+      </p>
+
+      <p>
+        The experiment illustrates how a private key determines
+        a public point on the curve. It includes step-by-step
+        calculations, a graphical representation and a
+        statistical exploration of the resulting points.
+      </p>
+
+      <p>
+        The example is educational and does not generate
+        real Ethereum keys.
+      </p>
+
+      <a class="button" href="homework-1/">
+        Open Homework 1
+      </a>
+    </section>
+
+  </main>
 
   <footer>
-    Statistics Course - Academic Year 2026/2027
+    Statistics Course - MSc Cybersecurity
+    <br>
+    Sapienza University of Rome | 2026/2027
   </footer>
 
 </body>
