@@ -3,98 +3,66 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Homework 1 — ECC and Blockchain</title>
+  <meta name="description" content="A small interactive experiment in elliptic-curve scalar multiplication and its statistical properties.">
+  <title>Homework 1 | Private Key to Public Key</title>
   <link rel="stylesheet" href="style.css">
   <script src="script.js" defer></script>
 </head>
 <body>
-  <main>
-    <header>
-      <p class="eyebrow">Statistics · Homework 1</p>
-      <h1>Elliptic Curve Cryptography and Blockchain</h1>
-      <p class="intro">A small experiment with secp256k1, followed by a statistical look at its output and a comparison of cryptography across different blockchains.</p>
-      <p class="note">Teaching example — not a secure hash function.</p>
-    </header>
-
-    <nav aria-label="On this page"><a href="#background">Background</a><a href="#demo">Try the demo</a><a href="#tests">Statistical tests</a><a href="#research">Blockchain research</a><a href="#references">References</a></nav>
-
-    <section id="background">
-      <h2>1. Background</h2>
-      <p>A cryptographic hash takes an input and returns a fixed-size result. In a well-designed hash, small changes to the input should produce very different outputs. Elliptic curve cryptography (ECC) is something else: it works with points on a curve and is commonly used for public-key cryptography and digital signatures.</p>
-      <p>Here we use the elliptic curve <strong>secp256k1</strong>, defined over a finite field by <code>y² = x³ + 7 (mod p)</code>. It has a standard base point <code>G</code> and a group order <code>n</code>. For a scalar <code>k</code>, we compute the point <code>P = kG</code>.</p>
-      <p>To make a toy “hash”, I first convert the UTF-8 bytes of the input into a scalar using a simple rolling calculation modulo <code>n</code>. I then multiply <code>G</code> by that scalar and return the 256-bit x-coordinate of the resulting point. This gives a fixed-size output, but it <strong>is not a secure hash construction</strong>. The rolling calculation has a predictable structure and can be attacked; using a real elliptic curve does not automatically make the result secure.</p>
+  <header class="site-header">
+    <div class="wrap header-row">
+      <a class="brand" href="#top"><span class="brand-symbol">∑</span><span>Statistics <span class="brand-muted">/ Homework 01</span></span></a>
+      <nav aria-label="Page sections"><a href="#experiment">Experiment</a><a href="#statistics">Statistics</a><a href="#discussion">Discussion</a><a href="#references">References</a></nav>
+    </div>
+  </header>
+  <main id="top" class="wrap">
+    <section class="hero">
+      <div class="eyebrow">STATISTICS 2026/27 · MSc CYBERSECURITY</div>
+      <h1>From a private key<br>to a public key</h1>
+      <p class="lead">An experiment with elliptic-curve scalar multiplication, using a deliberately small curve to make the arithmetic visible.</p>
+      <div class="hero-note"><strong>What this models.</strong> Ethereum uses the secp256k1 elliptic curve to relate private and public keys. Here we work with a much smaller curve, so every point can be inspected. This example is for learning only; it cannot protect real keys.</div>
     </section>
 
-    <section id="demo">
-      <h2>2. Practical experiment</h2>
-      <label for="message">Input text</label>
-      <textarea id="message" rows="3" spellcheck="false">Hello blockchain</textarea>
-      <button id="calculate">Calculate toy output</button>
-      <p class="small">X-coordinate of <code>kG</code>, displayed as 64 hexadecimal characters:</p>
-      <output id="hash-output" class="hash" aria-live="polite"></output>
-      <h3>Change the message</h3>
-      <p>Try changing just one letter and compare the two outputs. This is a quick way to explore the avalanche effect.</p>
-      <label for="changed-message">Second message</label>
-      <textarea id="changed-message" rows="2" spellcheck="false">Hello blockchaiN</textarea>
-      <button id="compare">Compare the two messages</button>
-      <output id="comparison" class="hash comparison" aria-live="polite"></output>
-      <p class="small">The JavaScript implementation uses <code>BigInt</code> and point arithmetic directly, without an ECC package. It is intended for learning, not for private keys, digital signatures or real applications.</p>
+    <section class="section" id="experiment">
+      <div class="section-heading"><span class="section-no">01</span><div><h2>The experiment</h2><p>Choose an integer private key and calculate the corresponding point on the curve.</p></div></div>
+      <div class="equation-card"><div><span class="small-label">TOY ELLIPTIC CURVE</span><div class="equation">y² ≡ x³ + 7 <span>(mod 17)</span></div></div><div><span class="small-label">BASE POINT</span><div class="equation">G = (1, 5)</div></div><div><span class="small-label">PUBLIC KEY</span><div class="equation">Q = kG</div></div></div>
+      <div class="columns">
+        <div class="panel">
+          <h3>Generate a public key</h3>
+          <label for="privateKey">Private key <span class="subtle">(positive integer, 1–1000)</span></label>
+          <div class="input-row"><input id="privateKey" type="number" min="1" max="1000" step="1" value="6"><button id="calculate" class="button primary" type="button">Calculate</button></div>
+          <p class="field-help">The default k = 6 follows the example in the assignment. The point G has order 9, so values of k differing by 9 produce the same point.</p>
+          <div class="result"><span class="small-label">TOY PUBLIC KEY</span><div id="resultPoint" class="result-point" aria-live="polite">Q = (5, 8)</div><p id="resultNote">6G, obtained through point addition.</p></div>
+          <div class="animation-row"><button class="button secondary" id="play" type="button">▶ Play steps</button><button class="button quiet" id="reset" type="button">Show all</button><label for="speed" class="speed-label">Speed</label><select id="speed" aria-label="Animation speed"><option value="1250">Slow</option><option value="700" selected>Normal</option><option value="350">Fast</option></select></div>
+          <p id="animationStatus" class="field-help" aria-live="polite">All steps are shown.</p>
+        </div>
+        <div class="panel plot-panel"><div class="plot-heading"><h3>Points on the curve</h3><span class="plot-key"><i></i> Multiples of G</span></div><svg id="curvePlot" viewBox="0 0 460 390" role="img" aria-label="The valid points on the curve over the finite field modulo 17"></svg><p class="plot-caption">Every dot is a solution modulo 17. The highlighted points follow the multiples of G. This finite-field plot is not a continuous elliptic curve.</p></div>
+      </div>
+      <div class="panel steps-panel"><div class="steps-title"><div><h3>Point-by-point calculation</h3><p>The program adds G to the previous point at each step.</p></div><span id="stepCount" class="pill">6 steps</span></div><div class="table-scroll"><table><thead><tr><th>Step</th><th>Operation</th><th>Result</th><th>Method</th></tr></thead><tbody id="stepsBody"></tbody></table></div><p class="footnote">Point at infinity (∞) acts as the identity. A multiple of 9 gives ∞ with this particular base point; it is not an ordinary affine public key.</p></div>
     </section>
 
-    <section id="tests">
-      <h2>3. Statistical observations</h2>
-      <p>I use a reproducible set of sample messages (<code>sample-0000</code>, <code>sample-0001</code>, and so on). For each message, the code flips one bit in the last UTF-8 byte and measures the Hamming distance between the two 256-bit outputs. It also measures overall bit balance, pooled binary entropy and repeated outputs.</p>
-      <label for="sample-count">Number of sample pairs</label>
-      <select id="sample-count"><option value="24">24 (quick)</option><option value="64" selected>64</option><option value="128">128 (slower)</option></select>
-      <button id="run">Run statistical tests</button>
-      <div id="report" class="report" aria-live="polite">Click the button to run the experiment.</div>
-      <div id="distribution" aria-label="Output bit proportions"></div>
-      <div id="histogram"></div>
-      <h3>How to read these results</h3>
-      <p><strong>Bit balance:</strong> For random-looking 256-bit outputs, approximately half of the bits should be 1. With a small sample, we should not expect exactly 50%.</p>
-      <p><strong>Avalanche effect:</strong> A strong hash is expected to change roughly half the output bits when just one input bit changes. We report the observed Hamming distance, not a proof that the avalanche property holds.</p>
-      <p><strong>Entropy:</strong> The reported number is the binary Shannon entropy calculated from the pooled proportion of zeros and ones. It describes bit balance only; it does <em>not</em> measure the cryptographic entropy or unpredictability of the output.</p>
-      <p><strong>Collisions:</strong> Not finding repeated outputs in this small set is weak evidence. The rolling conversion of text into a scalar is not collision-resistant, and reducing modulo the curve order can create collisions. Different points can also share an x-coordinate (<code>P</code> and <code>−P</code>).</p>
-      <h3>Method and limitations</h3>
-      <p>The experiment is deterministic, so anyone running the same sample size obtains the same figures. The 50% bit balance and 128/256 changed bits are useful reference values, not formal acceptance thresholds. The sample messages are similar rather than randomly selected, and this is not a complete randomness test suite. I also do not test resistance to preimages, second preimages or carefully constructed collisions. A few good-looking statistics cannot establish these properties.</p>
-      <p>The biggest weakness is the first step: converting bytes into a scalar by repeatedly multiplying by 257. For short inputs this encoding is predictable and, without modular wraparound, easy to reconstruct from the scalar. Multiplication by the real secp256k1 base point does not turn that simple encoding into a standard secure hash function. It is only an illustration of how message data can be mapped into a curve computation.</p>
+    <section class="section" id="statistics">
+      <div class="section-heading"><span class="section-no">02</span><div><h2>Statistical exploration</h2><p>Instead of relying on random trials, we can inspect the complete cycle of this base point.</p></div></div>
+      <div class="panel stats-controls"><div><h3>Compare private keys</h3><p>Explore all 9 residues of k modulo the order of G. The eight finite outputs are analyzed separately from the point at infinity.</p></div><button id="runStats" class="button primary" type="button">Recalculate statistics</button></div>
+      <div class="metric-grid"><div class="metric"><span class="small-label">ORDER OF G</span><strong id="orderMetric">9</strong><span>9G = ∞</span></div><div class="metric"><span class="small-label">FINITE OUTPUTS</span><strong id="finiteMetric">8</strong><span>For k = 1, …, 8</span></div><div class="metric"><span class="small-label">DISTINCT x VALUES</span><strong id="uniqueXMetric">4</strong><span>Among finite points</span></div><div class="metric"><span class="small-label">MEAN 1-BIT RATE</span><strong id="bitMetric">—</strong><span>5-bit x and y encodings</span></div></div>
+      <div class="chart-grid"><div class="panel"><h3>Frequency of coordinates</h3><p class="chart-desc">Occurrences of each x and y value in the eight finite outputs.</p><div id="frequencyChart" class="chart-host"></div></div><div class="panel"><h3>Individual bit frequencies</h3><p class="chart-desc">Fraction of 1s at each bit position, with coordinates written as 5-bit integers.</p><div id="bitsChart" class="chart-host"></div></div></div>
+      <div class="panel stats-panel"><h3>All outputs in one cycle</h3><div class="table-scroll"><table><thead><tr><th>Private key k</th><th>Point kG</th><th>x (5 bits)</th><th>y (5 bits)</th></tr></thead><tbody id="statsBody"></tbody></table></div><div id="statsSummary" class="analysis-text" aria-live="polite"></div></div>
+      <div class="panel hamming-panel">
+        <h3>Changes between consecutive private keys</h3>
+        <p class="chart-desc">Compare kG and (k + 1)G for k = 1, …, 7. Hamming distance counts differing bits in the two 5-bit coordinate encodings.</p>
+        <div class="hamming-metrics"><div><span class="small-label">AVERAGE HAMMING DISTANCE</span><strong id="hammingAverage">—</strong></div><div><span class="small-label">OBSERVED RANGE</span><strong id="hammingRange">—</strong></div></div>
+        <div class="table-scroll"><table><thead><tr><th>Private key k</th><th>Next key k + 1</th><th>Changed output bits</th></tr></thead><tbody id="hammingBody"></tbody></table></div>
+        <p class="hamming-explanation" id="hammingExplanation"></p>
+      </div>
     </section>
 
-    <section id="research">
-      <h2>4. Research: cryptography and statistics in blockchains</h2>
-      <p>The three examples below show that blockchains use cryptography for different purposes: linking data, proving authorization and reaching agreement on the ledger. Their statistical questions are different too.</p>
-      <h3>Bitcoin</h3>
-      <p>Bitcoin uses SHA-256 in block headers and proof of work. Miners repeatedly change parts of a candidate block until the hash falls below a target. Each trial can be modeled approximately as a Bernoulli trial with a very small success probability, so the number of attempts needed is random. A lower target means finding a valid block is harder.</p>
-      <p>For a simple probability model, let <code>p</code> be the probability that one independent hash attempt meets the target. The number <code>N</code> of trials until the first success follows a geometric distribution: <code>Pr(N = k) = (1 − p)^(k − 1) p</code>, for <code>k = 1, 2, ...</code>. Its expected value is <code>E[N] = 1/p</code>. For example, if <code>p = 1/1,000,000</code>, we expect one million attempts on average, but that is not a guarantee of success after one million tries. This helps explain why mining times vary.</p>
-      <p>For spending coins, signatures prove authorization. Bitcoin has used ECDSA over secp256k1 for years; Taproot also supports BIP340 Schnorr signatures over the same curve. The hash function and the signature algorithm do different jobs: hashing commits to data, while signatures prove that a valid key authorized a transaction.</p>
-      <h3>Ethereum</h3>
-      <p>Ethereum uses Keccak-256 for addresses and data structures such as transaction-related hashes. Normal externally owned accounts use ECDSA with secp256k1 to sign transactions. Ethereum does not use Bitcoin-style mining anymore: under proof of stake, validators are selected to propose blocks and participate in committees. Random selection and stake weighting introduce probability into the consensus process, while penalties help discourage dishonest behavior.</p>
-      <p>This is a useful difference from Bitcoin. Both networks use related public-key cryptography for user accounts, but their methods for agreeing on new blocks are quite different.</p>
-      <p>There is a probability question here as well. In a simplified model, if a validator controls a fraction <code>w</code> of the total effective stake, its chance of being chosen as a block proposer in a given slot is approximately <code>w</code>. Over <code>T</code> comparable slots, the expected number of proposals is approximately <code>T × w</code>. Real Ethereum selection follows a protocol-defined pseudorandom process, so this model is an illustration rather than a full simulation of the protocol.</p>
-      <h3>Solana</h3>
-      <p>Solana transactions normally use Ed25519 signatures, based on a different curve from secp256k1. Solana also uses Proof of History: a sequence of repeated cryptographic hash computations helps provide a verifiable ordering of events. Proof of History is not, by itself, the entire consensus mechanism; the network also relies on stake-based validator participation.</p>
-      <p>The statistical link here is less about mining trials and more about validator behavior, network performance and the assumptions behind cryptographic hash outputs.</p>
-      <p>Proof of History repeatedly applies SHA-256 so that later values depend on earlier ones. This is different from my secp256k1 toy output, which maps each input to a curve point. Both involve deterministic calculations, but they do not provide the same security guarantees. Looking at bit frequencies or Hamming distances may be interesting in either case, while neither test proves that the system is secure or that its consensus rules work correctly.</p>
-      <h3>Comparison</h3>
-      <div class="scroll"><table><thead><tr><th>Blockchain</th><th>Typical signatures</th><th>Hashing example</th><th>Statistical connection</th></tr></thead><tbody><tr><td>Bitcoin</td><td>ECDSA / Schnorr (secp256k1)</td><td>SHA-256</td><td>Mining probability</td></tr><tr><td>Ethereum</td><td>ECDSA (secp256k1) for externally owned accounts</td><td>Keccak-256</td><td>Validator sampling</td></tr><tr><td>Solana</td><td>Ed25519</td><td>Sequential SHA-256 in Proof of History</td><td>Stake-based validator system</td></tr></tbody></table></div>
-      <h3>What statistics adds</h3>
-      <p>The most direct statistical example is Bitcoin mining: a very small success probability repeated many times explains why block discovery is irregular. In proof-of-stake networks, random committee or proposer selection creates different probability questions. Statistics can also help monitor transaction activity and unusual patterns, though that kind of analysis is separate from the cryptographic proof that a signature is valid.</p>
-      <p>Overall, cryptography provides mathematical mechanisms for integrity and authorization. Statistical analysis helps us describe randomness and observe behavior, but a few experimental tests cannot prove that a cryptographic system is secure.</p>
+    <section class="section" id="discussion"><div class="section-heading"><span class="section-no">03</span><div><h2>What the results mean</h2><p>Some statistical ideas apply to this mapping, but they should not be confused with the security requirements of a hash function.</p></div></div>
+      <div class="prose-grid"><article class="panel prose"><h3>Determinism and the one-way idea</h3><p>For a chosen private key k, the output Q = kG is always the same. Computing Q is straightforward when the curve and G are known. With a real, sufficiently large curve and a suitable subgroup, recovering k from Q is believed to be computationally infeasible. This is the elliptic-curve discrete logarithm problem. The small curve used here offers no such protection: all possible outputs can be listed immediately.</p><h3>Uniformity and repetition</h3><p>When k is sampled uniformly over the nonzero residues modulo 9, each of the eight finite multiples of G appears once, together with one point at infinity. That is uniformity over the cyclic subgroup, not uniformity of individual x and y coordinates. In the plot and frequency table, several coordinate values recur. Key choices outside a single cycle simply repeat the same points.</p><h3>Input/output correlation</h3><p>The mapping from k to kG is algebraic and periodic. A numerical correlation between k and a coordinate would depend on the chosen encoding and the small sample; it would not measure the difficulty of the discrete logarithm problem. Here the full sequence is more informative than an isolated correlation coefficient.</p></article><article class="panel prose"><h3>Bit patterns and avalanche-like changes</h3><p>We count 1s in five-bit binary encodings of the coordinates and compare consecutive finite outputs with Hamming distance. These are descriptive measurements, but they depend on the coordinate representation. The group operation does not promise that changing one bit of k will flip half the bits of Q. The usual avalanche criterion is associated with cryptographic hash functions and block-cipher components, not a formal requirement of elliptic-curve scalar multiplication.</p><h3>Why this is not a hash function</h3><p>Elliptic-curve scalar multiplication maps a scalar into a curve point. Its intended security relies on the difficulty of reversing that group operation. A cryptographic hash function instead maps messages of arbitrary length to fixed-length digests and is evaluated using properties such as preimage resistance, second-preimage resistance and collision resistance. We should not infer those properties from the coordinate histograms of this toy curve.</p><h3>Connection to Ethereum</h3><p>Ethereum externally owned accounts use public keys derived from secp256k1 private keys. The Ethereum address is generated by hashing the uncompressed public key coordinates with Keccak-256 and taking the last 20 bytes. That address derivation is another operation, not part of the toy point multiplication implemented on this page.</p></article></div>
+      <div class="notice"><strong>Limit of the experiment.</strong> Eight finite points cannot establish anything about real-world cryptographic security. The purpose of the statistics is to identify patterns, explain what they measure, and see where a small mathematical example differs from cryptographic practice.</div>
     </section>
 
-    <section id="references">
-      <h2>5. References</h2>
-      <ul>
-        <li><a href="https://www.secg.org/sec2-v2.pdf">SECG, SEC 2: Recommended Elliptic Curve Domain Parameters (secp256k1)</a></li>
-        <li><a href="https://developer.bitcoin.org/devguide/">Bitcoin Developer Guide</a></li>
-        <li><a href="https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki">Bitcoin BIP340: Schnorr Signatures for secp256k1</a></li>
-        <li><a href="https://ethereum.org/en/developers/docs/consensus-mechanisms/pos/">Ethereum documentation: Proof of Stake</a></li>
-        <li><a href="https://ethereum.org/en/developers/docs/accounts/">Ethereum documentation: Accounts</a></li>
-        <li><a href="https://solana.com/docs">Solana documentation</a></li>
-        <li><a href="https://solana.com/news/proof-of-history">Solana: Proof of History overview</a></li>
-      </ul>
-    </section>
-    <footer>Statistics course · Academic year 2026/2027 · Homework 1</footer>
+    <section class="section references" id="references"><div class="section-heading"><span class="section-no">04</span><div><h2>References</h2><p>Technical standards and documentation used for the mathematical background and Ethereum context.</p></div></div><ol><li>Standards for Efficient Cryptography Group, <a href="https://www.secg.org/sec2-v2.pdf" target="_blank" rel="noopener noreferrer">SEC 2: Recommended Elliptic Curve Domain Parameters</a>, Version 2.0, 2010.</li><li>Ethereum.org, <a href="https://ethereum.org/en/developers/docs/accounts/" target="_blank" rel="noopener noreferrer">Ethereum accounts</a>.</li><li>NIST, <a href="https://csrc.nist.gov/pubs/fips/180-4/upd1/final" target="_blank" rel="noopener noreferrer">FIPS 180-4: Secure Hash Standard</a> (background on cryptographic hashes).</li></ol></section>
   </main>
+  <footer class="footer"><div class="wrap">Statistics · Homework 1 · Toy elliptic-curve scalar multiplication</div></footer>
 </body>
 </html>
