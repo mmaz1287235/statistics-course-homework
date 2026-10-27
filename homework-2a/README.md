@@ -18,7 +18,7 @@ The letter counts come from the **Lee Background Corpus**, a collection of 300 E
 
 https://github.com/piskvorky/gensim/blob/develop/gensim/test/test_data/lee_background.cor
 
-I use documents 1 to 200 for training and documents 201 to 300 for evaluation. Only A through Z are counted. The evaluation windows were sampled with Python's `random.Random(4411)` separately for each of the seven lengths. Each length contains 500 windows. The archive stores only the 26 letter counts for each window, not the underlying news articles. The Caesar shifts are selected with a JavaScript pseudorandom generator using seed 20261020. This means the displayed 3,500 outcomes can be reproduced offline.
+I use documents 1 to 200 for training and documents 201 to 300 for evaluation. Only A through Z are counted. The evaluation windows were sampled using a deterministic generator with seed 4411. The JavaScript preparation script includes a compatible implementation of the original MT19937 sampling procedure to preserve the existing experiment. Each length contains 500 windows. The archive stores only the 26 letter counts for each window, not the underlying news articles. The Caesar shifts are selected with a JavaScript pseudorandom generator using seed 20261020. This means the displayed 3,500 outcomes can be reproduced offline.
 
 Because evaluation windows can overlap and come from the same news collection, the samples are not fully independent. Wilson intervals are descriptive and should not be interpreted as population-wide guarantees. Results may differ for literary writing, technical prose or short unusual messages.
 
@@ -28,6 +28,6 @@ HW1 used the small curve y² = x³ + 7 modulo 17, with base point (1, 5) of orde
 
 ## Files
 
-`index.html`, `style.css`, `script.js`, `corpus-data.js`. The last file holds frequencies and evaluation count vectors, not article text.
+`index.html`, `style.css`, `script.js`, `corpus-data.js`, `prepare-corpus.js`. The data file holds frequencies and evaluation count vectors, not article text. The optional preparation tool uses Node.js (JavaScript), not a separate programming language.
 
-For independent regeneration, download the corpus from the source and run `python prepare_corpus.py /path/to/lee_background.cor`. This creates `corpus-data.js` with the same training counts and evaluation windows. The script does not require Gensim.
+For independent regeneration, download the corpus from the source and run `node prepare-corpus.js /path/to/lee_background.cor` using Node.js. This regenerates `corpus-data.js` from the 300 documents with the original sampling procedure. The published website uses the already included data file and requires no regeneration or Node.js installation.
